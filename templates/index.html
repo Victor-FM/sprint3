@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente e Pedidos API</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Gerenciamento de Clientes e Pedidos</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Adicionar Cliente</h2>
+            <form id="add-client-form">
+                <input type="text" id="nome" placeholder="Nome" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="date" id="data-nascimento" placeholder="Data de Nascimento" required>
+                <button type="submit">Adicionar</button>
+            </form>
+        </section>
+        <section>
+            <h2>Clientes</h2>
+            <button id="load-clientes">Carregar Clientes</button>
+            <ul id="clientes-list"></ul>
+        </section>
+        <section>
+            <h2>Adicionar Pedido</h2>
+            <form id="add-pedido-form">
+                <input type="number" id="cliente-id" placeholder="Cliente ID" required>
+                <input type="date" id="data-pedido" placeholder="Data do Pedido" required>
+                <input type="number" id="valor" placeholder="Valor" step="0.01" required>
+                <button type="submit">Adicionar Pedido</button>
+            </form>
+        </section>
+        <section>
+            <h2>Pedidos</h2>
+            <button id="load-pedidos">Carregar Pedidos</button>
+            <ul id="pedidos-list"></ul>
+        </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addClientForm = document.getElementById('add-client-form');
+            const addPedidoForm = document.getElementById('add-pedido-form');
+            const clientesList = document.getElementById('clientes-list');
+            const pedidosList = document.getElementById('pedidos-list');
+            const loadClientesBtn = document.getElementById('load-clientes');
+            const loadPedidosBtn = document.getElementById('load-pedidos');
+
+            addClientForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const nome = document.getElementById('nome').value;
+                const email = document.getElementById('email').value;
+                const dataNascimento = document.getElementById('data-nascimento').value;
+
+                fetch('http://10.10.51.80:8080/clientes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Nome: nome,
+                        Email: email,
+                        DataNascimento: dataNascimento
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    addClientForm.reset();
+                })
+                .catch(error => console.error('Erro:', error));
+            });
+
+            loadClientesBtn.addEventListener('click', function() {
+                fetch('http://10.10.51.80:8080/clientes')
+                .then(response => response.json())
+                .then(data => {
+                    clientesList.innerHTML = '';
+                    data.forEach(cliente => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `ID: ${cliente.ClienteID}, Nome: ${cliente.Nome}, Email: ${cliente.Email}, Data de Nascimento: ${cliente.DataNascimento}`;
+                        clientesList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Erro:', error));
+            });
+
+            addPedidoForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const clienteID = document.getElementById('cliente-id').value;
+                const dataPedido = document.getElementById('data-pedido').value;
+                const valor = document.getElementById('valor').value;
+
+                fetch('http://10.10.51.80:8080/pedidos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ClienteID: clienteID,
+                        DataPedido: dataPedido,
+                        Valor: valor
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    addPedidoForm.reset();
+                })
+                .catch(error => console.error('Erro:', error));
+            });
+
+            loadPedidosBtn.addEventListener('click', function() {
+                fetch('http://10.10.51.80:8080/pedidos')
+                .then(response => response.json())
+                .then(data => {
+                    pedidosList.innerHTML = '';
+                    data.forEach(pedido => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `ID: ${pedido.PedidoID}, ClienteID: ${pedido.ClienteID}, Data do Pedido: ${pedido.DataPedido}, Valor: ${pedido.Valor}`;
+                        pedidosList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Erro:', error));
+            });
+        });
+    </script>
+</body>
+</html>
